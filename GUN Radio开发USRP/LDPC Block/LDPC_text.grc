@@ -1,0 +1,351 @@
+options:
+  parameters:
+    author: abc
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: LDPC_text
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: LDPC_text
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '32000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport pmt\nimport\
+      \ time\nimport threading\n\n####################################\n# PDU Bit\
+      \ + Channel + Noise Power Source\n####################################\nclass\
+      \ pdu_bit_h_noise(gr.basic_block):\n    \"\"\"\n    \u6BCF\u9694 interval_s\
+      \ \u79D2\u53D1\u9001 num_bits \u6BD4\u7279\uFF0C\u540C\u65F6\u751F\u6210\u4E00\
+      \u4E2A\u590D\u9AD8\u65AF\u4FE1\u9053 h\n    \u5E76\u6839\u636E\u7ED9\u5B9A SNR\
+      \ \u548C\u4FE1\u53F7\u529F\u7387\u8BA1\u7B97\u566A\u58F0\u529F\u7387\n    \"\
+      \"\"\n    def __init__(self, interval_s=1.0, num_bits=10, snr_db=10.0, signal_power=1.0,\
+      \ print_bits=True):\n        gr.basic_block.__init__(self,\n            name=\"\
+      pdu_bit_h_noise_source\",\n            in_sig=None, out_sig=None)\n\n      \
+      \  self.interval_s = float(interval_s)\n        self.num_bits = int(num_bits)\n\
+      \        self.snr_db = float(snr_db)\n        self.signal_power = float(signal_power)\n\
+      \        self.print_bits = bool(print_bits)\n\n        # \u6D88\u606F\u7AEF\u53E3\
+      \n        self.message_port_register_out(pmt.intern(\"bits\"))\n        self.message_port_register_out(pmt.intern(\"\
+      h\"))\n        self.message_port_register_out(pmt.intern(\"noise_power\"))\n\
+      \n        # \u5F00\u542F\u7EBF\u7A0B\n        self.keep_running = True\n   \
+      \     self.thread = threading.Thread(target=self._run)\n        self.thread.daemon\
+      \ = True\n        self.thread.start()\n\n    def _run(self):\n        while\
+      \ self.keep_running:\n            # -------------------\n            # \u751F\
+      \u6210\u6BD4\u7279\n            # -------------------\n            bits = np.random.randint(0,\
+      \ 2, self.num_bits).astype(np.uint8)\n            if self.print_bits:\n    \
+      \            print(\"#######################\")\n\n                print(\"\
+      [Bit Source] Bits:\", bits.tolist())\n\n            # \u26A0\uFE0F \u8FD9\u91CC\
+      \u6539\u4E3A\u53D1\u9001 PDU\n            bits_msg = pmt.init_u8vector(len(bits),\
+      \ bits)\n            bits_pdu = pmt.cons(pmt.PMT_NIL, bits_msg)  # \u5305\u88C5\
+      \u6210 PDU\n            self.message_port_pub(pmt.intern(\"bits\"), bits_pdu)\n\
+      \n            # -------------------\n            # \u751F\u6210\u590D\u9AD8\u65AF\
+      \u4FE1\u9053 h\n            # -------------------\n            h = (np.random.randn()\
+      \ + 1j*np.random.randn()) / np.sqrt(2)\n            h_msg = pmt.from_complex(h)\
+      \  # \u76F4\u63A5\u53D1\u9001\u590D\u6570 PMT\n            self.message_port_pub(pmt.intern(\"\
+      h\"), h_msg)\n\n            # -------------------\n            # \u8BA1\u7B97\
+      \u566A\u58F0\u529F\u7387\n            # -------------------\n            snr_linear\
+      \ = 10**(self.snr_db / 10)\n            noise_power = self.signal_power / snr_linear\n\
+      \            noise_msg = pmt.from_double(float(noise_power))\n            self.message_port_pub(pmt.intern(\"\
+      noise_power\"), noise_msg)\n\n            time.sleep(self.interval_s)\n\n  \
+      \  def stop(self):\n        self.keep_running = False\n        self.thread.join()\n\
+      \        return super().stop()\n\n\n\n\n\n\n\n\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    interval_s: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_bits: '10'
+    print_bits: 'True'
+    signal_power: '2'
+    snr_db: '10'
+  states:
+    _io_cache: "('pdu_bit_h_noise_source', 'pdu_bit_h_noise', [('interval_s', '1.0'),\
+      \ ('num_bits', '10'), ('snr_db', '10.0'), ('signal_power', '1.0'), ('print_bits',\
+      \ 'True')], [], [('noise_power', 'message', 1), ('h', 'message', 1), ('bits',\
+      \ 'message', 1)], '\\n    \u6BCF\u9694 interval_s \u79D2\u53D1\u9001 num_bits\
+      \ \u6BD4\u7279\uFF0C\u540C\u65F6\u751F\u6210\u4E00\u4E2A\u590D\u9AD8\u65AF\u4FE1\
+      \u9053 h\\n    \u5E76\u6839\u636E\u7ED9\u5B9A SNR \u548C\u4FE1\u53F7\u529F\u7387\
+      \u8BA1\u7B97\u566A\u58F0\u529F\u7387\\n    ', ['interval_s', 'num_bits', 'print_bits',\
+      \ 'signal_power', 'snr_db'])"
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 168.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "# -*- coding: utf-8 -*-\nimport numpy as np\nimport pmt\nfrom gnuradio\
+      \ import gr\n\n####################################\n# PDU QPSK Modulator\n\
+      ####################################\nclass qpsk_mod_pdu(gr.basic_block):\n\
+      \    \"\"\"\n    PDU QPSK Mapper\n    \u8F93\u5165\uFF1APDU\uFF08u8 \u7C7B\u578B\
+      \uFF0C\u5185\u5BB9\u4E3A0/1\u6BD4\u7279\uFF09\n    \u8F93\u51FA\uFF1APDU\uFF08\
+      complex64\uFF09\n    \"\"\"\n\n    def __init__(self, print_enable=False):\n\
+      \        gr.basic_block.__init__(self,\n            name=\"PDU QPSK Modulator\"\
+      ,\n            in_sig=None,\n            out_sig=None)\n\n        self.print_enable\
+      \ = print_enable\n\n        # \u8BBE\u7F6E\u7AEF\u53E3\n        self.message_port_register_in(pmt.intern(\"\
+      in\"))\n        self.set_msg_handler(pmt.intern(\"in\"), self.handle_pdu)\n\
+      \        self.message_port_register_out(pmt.intern(\"out\"))\n\n    def handle_pdu(self,\
+      \ msg):\n        meta = pmt.car(msg)\n        vec = pmt.cdr(msg)\n\n       \
+      \ # \u8F6C numpy\n        bits = np.array(pmt.u8vector_elements(vec), dtype=np.uint8)\n\
+      \n        # \u786E\u4FDD\u5076\u6570\u4E2A\u6BD4\u7279\n        if len(bits)\
+      \ % 2 != 0:\n            bits = bits[:-1]\n\n        # \u62C6\u6210\u4E24\u6BD4\
+      \u7279\u4E00\u7EC4\n        bit_pairs = bits.reshape((-1, 2))\n\n        # Gray\
+      \ \u6620\u5C04\n        mapping = {\n            (0,0): (1+1j),\n          \
+      \  (0,1): (1-1j),\n            (1,1): (-1-1j),\n            (1,0): (-1+1j),\n\
+      \        }\n\n        syms = np.array([mapping[tuple(b)] for b in bit_pairs],\
+      \ dtype=np.complex64)\n\n        if self.print_enable:\n            print(f\"\
+      [QPSK Mod] Output symbols: {syms}\")\n\n        # \u8F93\u51FA PDU\n       \
+      \ out_vec = pmt.init_c32vector(len(syms), syms.tolist())\n        out_msg =\
+      \ pmt.cons(meta, out_vec)\n        self.message_port_pub(pmt.intern(\"out\"\
+      ), out_msg)\n\n\n\n\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    print_enable: 'True'
+  states:
+    _io_cache: "('PDU QPSK Modulator', 'qpsk_mod_pdu', [('print_enable', 'False')],\
+      \ [('in', 'message', 1)], [('out', 'message', 1)], '\\n    PDU QPSK Mapper\\\
+      n    \u8F93\u5165\uFF1APDU\uFF08u8 \u7C7B\u578B\uFF0C\u5185\u5BB9\u4E3A0/1\u6BD4\
+      \u7279\uFF09\\n    \u8F93\u51FA\uFF1APDU\uFF08complex64\uFF09\\n    ', ['print_enable'])"
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [896, 232.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_2
+  id: epy_block
+  parameters:
+    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport pmt\n\n####################################\n\
+      # QPSK Demod PDU\n####################################\nclass qpsk_demod_pdu(gr.basic_block):\n\
+      \    \"\"\"\n    QPSK Demod PDU\n    \u8F93\u5165\uFF1AIQ PDU\n    \u8F93\u51FA\
+      \uFF1Abit \u6216 LLR PDU\n    \"\"\"\n    def __init__(self, output_type='llr',\
+      \ verbose=False):\n        gr.basic_block.__init__(self,\n            name=\"\
+      QPSK Demod PDU\",\n            in_sig=None, out_sig=None)\n\n        self.output_type\
+      \ = output_type.lower()\n        self.verbose = verbose\n        self.h = 1.0+0j\n\
+      \        self.noiseVar = 1.0\n\n        # \u6D88\u606F\u7AEF\u53E3\n       \
+      \ self.message_port_register_in(pmt.intern(\"in\"))\n        self.set_msg_handler(pmt.intern(\"\
+      in\"), self.handle_msg)\n        self.message_port_register_out(pmt.intern(\"\
+      out\"))\n\n        self.message_port_register_in(pmt.intern(\"set_h\"))\n  \
+      \      self.set_msg_handler(pmt.intern(\"set_h\"), self.handle_h)\n        self.message_port_register_in(pmt.intern(\"\
+      set_noise\"))\n        self.set_msg_handler(pmt.intern(\"set_noise\"), self.handle_noise)\n\
+      \n    def handle_h(self, msg):\n        self.h = pmt.to_complex(msg)\n     \
+      \ \n    def handle_noise(self, msg):\n        self.noiseVar = float(pmt.to_python(msg))\n\
+      \      \n    def handle_msg(self, msg):\n        meta = pmt.car(msg)\n     \
+      \   payload = pmt.cdr(msg)\n        iq = np.array(pmt.c32vector_elements(payload),\
+      \ dtype=np.complex64)\n        n = len(iq)\n\n        # \u4FE1\u9053\u8865\u507F\
+      \n        r = iq * np.conj(self.h)\n\n        demod = np.zeros(2*n, dtype=np.float32)\n\
+      \        demod[0::2] = 2*np.real(r) / self.noiseVar\n        demod[1::2] = 2*np.imag(r)\
+      \ / self.noiseVar\n\n        if self.output_type == 'bit':\n            bits\
+      \ = (demod < 0).astype(np.uint8)\n            out_msg = pmt.cons(meta, pmt.init_u8vector(len(bits),\
+      \ bits))\n        else:\n            out_msg = pmt.cons(meta, pmt.init_f32vector(len(demod),\
+      \ demod))\n\n        # verbose \u6253\u5370 PDU \u5185\u5BB9\n        if self.verbose:\n\
+      \            payload = pmt.cdr(out_msg)\n            if self.output_type ==\
+      \ 'bit':\n                data = np.array(pmt.u8vector_elements(payload), dtype=np.uint8)\n\
+      \            else:\n                data = np.array(pmt.f32vector_elements(payload),\
+      \ dtype=np.float32)\n            print(\"[Demod] Output:\", data.tolist())\n\
+      \n        # \u53D1\u9001\u6D88\u606F\n        self.message_port_pub(pmt.intern(\"\
+      out\"), out_msg)\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    output_type: '''bit'''
+    verbose: 'True'
+  states:
+    _io_cache: "('QPSK Demod PDU', 'qpsk_demod_pdu', [('output_type', \"'llr'\"),\
+      \ ('verbose', 'False')], [('set_h', 'message', 1), ('set_noise', 'message',\
+      \ 1), ('in', 'message', 1)], [('out', 'message', 1)], '\\n    QPSK Demod PDU\\\
+      n    \u8F93\u5165\uFF1AIQ PDU\\n    \u8F93\u51FA\uFF1Abit \u6216 LLR PDU\\n\
+      \    ', ['output_type', 'verbose'])"
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1008, 360.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_3
+  id: epy_block
+  parameters:
+    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport pmt\nimport\
+      \ time\nimport threading\n####################################\n# Channel PDU\
+      \ (External h + noise)\n####################################\nclass channel_pdu_external(gr.basic_block):\n\
+      \    \"\"\"\n    PDU \u4FE1\u9053\uFF1A\u4E58 h + \u52A0\u566A\u58F0\n    \u8F93\
+      \u5165\uFF1A\n        - in: IQ PDU (c32vector)\n        - set_h: \u5916\u90E8\
+      \u590D\u6570 h (PMT complex)\n        - set_noise: \u5916\u90E8\u566A\u58F0\u529F\
+      \u7387 (float)\n    \u8F93\u51FA\uFF1A\n        - out: IQ PDU\n    \"\"\"\n\
+      \    def __init__(self, verbose=False):\n        gr.basic_block.__init__(self,\n\
+      \            name=\"Channel PDU\",\n            in_sig=None, out_sig=None)\n\
+      \n        self.verbose = verbose\n        self.h = 1.0+0j\n        self.noiseVar\
+      \ = 0.0\n\n        # \u6D88\u606F\u7AEF\u53E3\n        self.message_port_register_in(pmt.intern(\"\
+      in\"))\n        self.set_msg_handler(pmt.intern(\"in\"), self.handle_in)\n\n\
+      \        self.message_port_register_in(pmt.intern(\"set_h\"))\n        self.set_msg_handler(pmt.intern(\"\
+      set_h\"), self.handle_h)\n\n        self.message_port_register_in(pmt.intern(\"\
+      set_noise\"))\n        self.set_msg_handler(pmt.intern(\"set_noise\"), self.handle_noise)\n\
+      \n        self.message_port_register_out(pmt.intern(\"out\"))\n\n    def handle_h(self,\
+      \ msg):\n        self.h = pmt.to_complex(msg)  # msg \u662F PMT complex\n  \
+      \      if self.verbose:\n            print(\"[Channel] Set h =\", self.h)\n\n\
+      \    def handle_noise(self, msg):\n        self.noiseVar = float(pmt.to_python(msg))\n\
+      \        if self.verbose:\n            print(\"[Channel] Set noiseVar =\", self.noiseVar)\n\
+      \n    def handle_in(self, msg):\n        meta = pmt.car(msg)\n        payload\
+      \ = pmt.cdr(msg)\n        iq = np.array(pmt.c32vector_elements(payload), dtype=np.complex64)\n\
+      \        n = len(iq)\n\n        # \u751F\u6210\u566A\u58F0\n        if self.noiseVar\
+      \ > 0:\n            noise = np.sqrt(self.noiseVar/2)*(np.random.randn(n)+1j*np.random.randn(n))\n\
+      \        else:\n            noise = np.zeros(n, dtype=np.complex64)\n\n    \
+      \    out_iq = iq*self.h + noise\n\n        if self.verbose:\n            print(\"\
+      [Channel] output IQ:\", out_iq)\n\n        out_msg = pmt.cons(meta, pmt.init_c32vector(len(out_iq),\
+      \ out_iq))\n        self.message_port_pub(pmt.intern(\"out\"), out_msg)"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    verbose: 'True'
+  states:
+    _io_cache: "('Channel PDU', 'channel_pdu_external', [('verbose', 'False')], [('set_h',\
+      \ 'message', 1), ('set_noise', 'message', 1), ('in', 'message', 1)], [('out',\
+      \ 'message', 1)], '\\n    PDU \u4FE1\u9053\uFF1A\u4E58 h + \u52A0\u566A\u58F0\
+      \\n    \u8F93\u5165\uFF1A\\n        - in: IQ PDU (c32vector)\\n        - set_h:\
+      \ \u5916\u90E8\u590D\u6570 h (PMT complex)\\n        - set_noise: \u5916\u90E8\
+      \u566A\u58F0\u529F\u7387 (float)\\n    \u8F93\u51FA\uFF1A\\n        - out: IQ\
+      \ PDU\\n    ', ['verbose'])"
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1152, 240.0]
+    rotation: 0
+    state: enabled
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: IQ
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1312, 264.0]
+    rotation: 0
+    state: enabled
+- name: virtual_sink_0_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: noise
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [656, 168.0]
+    rotation: 0
+    state: enabled
+- name: virtual_sink_0_1
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: h
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 200.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: IQ
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 352.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: h
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 384.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0_1
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: noise
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 424.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [epy_block_0, bits, epy_block_1, in]
+- [epy_block_0, h, virtual_sink_0_1, '0']
+- [epy_block_0, noise_power, virtual_sink_0_0, '0']
+- [epy_block_1, out, epy_block_3, in]
+- [epy_block_3, out, virtual_sink_0, '0']
+- [virtual_source_0, '0', epy_block_2, in]
+- [virtual_source_0_0, '0', epy_block_2, set_h]
+- [virtual_source_0_1, '0', epy_block_2, set_noise]
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
